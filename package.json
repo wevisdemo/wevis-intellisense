@@ -1,47 +1,81 @@
 {
   "name": "wevis-intellisense",
-  "displayName": "Wevis Intellisense",
-  "description": "VSCode intellisense for WeVis design system",
-  "version": "0.0.1",
+  "displayName": "Wevis IntelliSense",
+  "description": "VSCode IntelliSense for WeVis Design System",
+  "version": "1.0.0",
   "publisher": "rootenginear",
   "repository": "https://github.com/rootEnginear/wevis-intellisense",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.73.0"
   },
+  "keywords": [
+    "css",
+    "class",
+    "autocomplete",
+    "wevis"
+  ],
   "categories": [
     "Other"
   ],
+  "icon": "icon.png",
   "activationEvents": [
-    "onCommand:wevis-intellisense.helloWorld"
+    "*"
   ],
-  "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "wevis-intellisense.helloWorld",
-        "title": "Hello World"
+        "command": "wevis-intellisense.openSetting",
+        "title": "WeVis IntelliSense: Open Settings"
+      }
+    ],
+    "configuration": [
+      {
+        "title": "Wevis IntelliSense",
+        "properties": {
+          "wevis-intellisense.allowEmmet": {
+            "description": "Allow suggestion with Emmet abbreviation.",
+            "type": "boolean",
+            "default": true
+          },
+          "wevis-intellisense.htmlLanguages": {
+            "description": "A list of HTML based languages where suggestions are enabled.",
+            "type": "array",
+            "default": [
+              "html",
+              "vue",
+              "vue-html",
+              "svelte",
+              "astro"
+            ]
+          },
+          "wevis-intellisense.javaScriptLanguages": {
+            "description": "A list of JavaScript based languages where suggestions are enabled.",
+            "type": "array",
+            "default": [
+              "javascript",
+              "javascriptreact",
+              "typescriptreact"
+            ]
+          }
+        }
       }
     ]
   },
+  "main": "./out/extension.js",
   "scripts": {
     "vscode:prepublish": "yarn run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "yarn run compile && yarn run lint",
-    "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+    "lint": "eslint src --ext ts"
   },
   "devDependencies": {
     "@types/vscode": "^1.73.0",
-    "@types/glob": "^8.0.0",
-    "@types/mocha": "^10.0.0",
     "@types/node": "16.x",
     "@typescript-eslint/eslint-plugin": "^5.42.0",
     "@typescript-eslint/parser": "^5.42.0",
     "eslint": "^8.26.0",
-    "glob": "^8.0.3",
-    "mocha": "^10.1.0",
-    "typescript": "^4.8.4",
-    "@vscode/test-electron": "^2.2.0"
+    "typescript": "^4.8.4"
   }
 }
