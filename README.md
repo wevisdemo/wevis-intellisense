@@ -5,7 +5,12 @@
 ![MIT License](https://img.shields.io/github/license/rootEnginear/wevis-intellisense)
 ![GitHub issues](https://img.shields.io/github/issues/rootEnginear/wevis-intellisense)
 
+<!-- ![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/rootenginear.wevis-intellisense) -->
+<!-- ![Visual Studio Marketplace Last Updated](https://img.shields.io/visual-studio-marketplace/last-updated/rootenginear.wevis-intellisense) -->
+
 VSCode IntelliSense for [WeVis Design System](https://wevisdemo.github.io/design-systems/).
+
+To install the extension, use the keyword `WeVis` in your extension sidebar. Alternatively, you can download it from [Visual Studio Code Marketplace](https://marketplace.visualstudio.com/items?itemName=rootenginear.wevis-intellisense).
 
 ## Features
 
