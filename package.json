@@ -1,10 +1,13 @@
 {
   "name": "wevis-intellisense",
-  "displayName": "Wevis IntelliSense",
+  "displayName": "WeVis IntelliSense",
   "description": "VSCode IntelliSense for WeVis Design System",
   "version": "1.0.0",
   "publisher": "rootenginear",
-  "repository": "https://github.com/rootEnginear/wevis-intellisense",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rootEnginear/wevis-intellisense"
+  },
   "license": "MIT",
   "engines": {
     "vscode": "^1.73.0"
@@ -31,7 +34,7 @@
     ],
     "configuration": [
       {
-        "title": "Wevis IntelliSense",
+        "title": "WeVis IntelliSense",
         "properties": {
           "wevis-intellisense.allowEmmet": {
             "description": "Allow suggestion with Emmet abbreviation.",

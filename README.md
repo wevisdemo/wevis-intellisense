@@ -1,71 +1,54 @@
-# wevis-intellisense README
+<img src="./icon.png" width="128" height="128" loading="lazy" decoding="async" align="right" />
 
-This is the README for your extension "wevis-intellisense". After writing up a brief description, we recommend including the following sections.
+# WeVis IntelliSense
+
+![MIT License](https://img.shields.io/github/license/rootEnginear/wevis-intellisense)
+![GitHub issues](https://img.shields.io/github/issues/rootEnginear/wevis-intellisense)
+
+VSCode IntelliSense for [WeVis Design System](https://wevisdemo.github.io/design-systems/).
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+Autosuggest available CSS classes from the design system in several files format such as HTML (.html), Vue (.vue), React (.js, .jsx, .tsx), Svelte (.svelte), Astro (.astro). It works on the pattern `` class[Name]=[{]<"|'|`> ``; if the pattern matched, it will try to suggest you.
 
-For example if there is an image subfolder under your extension project workspace:
+![Autosuggestion in class attribute](./assets/class.jpg)
 
-\!\[feature X\]\(images/feature-x.png\)
+This extension also works with Emmet, so you can type `.` and it will start suggesting you. This is enabled by default, but you can disable this functionality in the settings.
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+![Autosuggestion in Emmet](./assets/emmet.jpg)
 
-## Requirements
+To provide a clear status whether the extension is available in the file, if the autosuggestion is available in a particular file, there will be a small "Wv" at the status bar.
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+![Extension availability shown in the status bar](./assets/status.jpg)
+
+To open the extension's settings, you can use a command "WeVis IntelliSense: Open Settings" via the command palette (`ctrl/cmd + shift + p`), or pressing the text "Wv" at the status bar.
+
+![Open extension settings using the command palette](./assets/command.jpg)
+
+For upcoming features and plan, please see [Planned Features](#planned-features).
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+There are 3 settings available in this extension:
 
-For example:
+- `wevis-intellisense.allowEmmet`
+  - Allow suggestion with Emmet abbreviation.
+  - Default: `true`
+- `wevis-intellisense.htmlLanguages`
+  - A list of HTML based languages where suggestions are enabled.
+  - Default: `["html", "vue", "vue-html", "svelte", "astro"]`
+- `wevis-intellisense.javaScriptLanguages`
+  - A list of JavaScript based languages where suggestions are enabled.
+  - Default: `["javascript", "javascriptreact", "typescriptreact"]`
 
-This extension contributes the following settings:
+## Planned Features
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
+- [x] Autosuggestion
+- [ ] Snippets
+  - [ ] Component Snippets
+  - [ ] Cookbook Snippets
+- [ ] Component Generator
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+- **1.0.0**: First release with basic suggest functionality.
