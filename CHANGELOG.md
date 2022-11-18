@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `wevis-intellisense.allowEmmet` -> `wevisIntellisense.allowEmmet`
   - `wevis-intellisense.htmlLanguages` -> `wevisIntellisense.htmlLanguages`
   - `wevis-intellisense.javaScriptLanguages` -> `wevisIntellisense.javascriptLanguages`
+- Change `activationEvents` from `*` to `onStartupFinished`
 
 ### Fixed
 
