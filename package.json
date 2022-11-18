@@ -28,7 +28,11 @@
   "contributes": {
     "commands": [
       {
-        "command": "wevis-intellisense.openSetting",
+        "command": "wevis-intellisense.toggleIntelliSense",
+        "title": "WeVis IntelliSense: Toggle IntelliSense"
+      },
+      {
+        "command": "wevis-intellisense.openSettings",
         "title": "WeVis IntelliSense: Open Settings"
       }
     ],
@@ -36,12 +40,17 @@
       {
         "title": "WeVis IntelliSense",
         "properties": {
-          "wevis-intellisense.allowEmmet": {
+          "wevisIntellisense.enableIntellisense": {
+            "description": "Enable IntelliSense in available file.",
+            "type": "boolean",
+            "default": true
+          },
+          "wevisIntellisense.allowEmmet": {
             "description": "Allow suggestion with Emmet abbreviation.",
             "type": "boolean",
             "default": true
           },
-          "wevis-intellisense.htmlLanguages": {
+          "wevisIntellisense.htmlLanguages": {
             "description": "A list of HTML based languages where suggestions are enabled.",
             "type": "array",
             "default": [
@@ -52,7 +61,7 @@
               "astro"
             ]
           },
-          "wevis-intellisense.javaScriptLanguages": {
+          "wevisIntellisense.javascriptLanguages": {
             "description": "A list of JavaScript based languages where suggestions are enabled.",
             "type": "array",
             "default": [

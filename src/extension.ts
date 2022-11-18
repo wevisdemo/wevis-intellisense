@@ -13,16 +13,19 @@
  * - https://github.com/microsoft/vscode-extension-samples/tree/main/quickinput-sample
  */
 
-import type { Disposable, ExtensionContext, TextDocument } from "vscode";
 import {
   commands,
   CompletionItem,
   CompletionItemKind,
+  Disposable,
+  ExtensionContext,
   languages,
   Position,
   Range,
   StatusBarAlignment,
   StatusBarItem,
+  TextDocument,
+  ThemeColor,
   window,
   workspace,
 } from "vscode";
@@ -30,19 +33,28 @@ import {
 import { CLASSES } from "./css-classes";
 
 const CONFIGURATION = {
-  allowEmmet: "wevis-intellisense.allowEmmet",
-  htmlLanguages: "wevis-intellisense.htmlLanguages",
-  javaScriptLanguages: "wevis-intellisense.javaScriptLanguages",
+  enableIntellisense: "wevisIntellisense.enableIntellisense",
+  allowEmmet: "wevisIntellisense.allowEmmet",
+  htmlLanguages: "wevisIntellisense.htmlLanguages",
+  javascriptLanguages: "wevisIntellisense.javascriptLanguages",
 };
 
 const COMMANDS = [
   {
-    cmd: "wevis-intellisense.openSetting",
+    cmd: "wevis-intellisense.openSettings",
     action: () => {
       commands.executeCommand(
         "workbench.action.openSettings",
         "@ext:rootenginear.wevis-intellisense"
       );
+    },
+  },
+  {
+    cmd: "wevis-intellisense.toggleIntelliSense",
+    action: () => {
+      const config = workspace.getConfiguration();
+      const isIntellisenseEnabled = config.get<boolean>(CONFIGURATION.enableIntellisense);
+      config.update(CONFIGURATION.enableIntellisense, !isIntellisenseEnabled, true);
     },
   },
 ];
@@ -65,12 +77,12 @@ const registerCompletionProvider = (
         document: TextDocument,
         position: Position
       ): CompletionItem[] {
-        const start: Position = new Position(position.line, 0);
-        const range: Range = new Range(start, position);
-        const text: string = document.getText(range);
+        const start = new Position(position.line, 0);
+        const range = new Range(start, position);
+        const text = document.getText(range);
 
         // Check if the cursor is on a class attribute and retrieve all the css rules in this class attribute
-        const rawClasses: RegExpMatchArray | null = text.match(classMatchRegex);
+        const rawClasses = text.match(classMatchRegex);
         if (!rawClasses || rawClasses.length === 1) {
           return [];
         }
@@ -80,14 +92,10 @@ const registerCompletionProvider = (
 
         // Creates a collection of CompletionItem based on the classes already cached
         const completionItems = CLASSES.map((className) => {
-          const completionItem = new CompletionItem(
-            className,
-            CompletionItemKind.Variable
-          );
-          const completionClassName = className;
+          const completionItem = new CompletionItem(className, CompletionItemKind.Value);
 
-          completionItem.filterText = completionClassName;
-          completionItem.insertText = completionClassName;
+          completionItem.filterText = className;
+          completionItem.insertText = className;
 
           return completionItem;
         });
@@ -118,7 +126,7 @@ const registerHTMLProviders = (disposables: Disposable[]) =>
 const registerJavaScriptProviders = (disposables: Disposable[]) =>
   workspace
     .getConfiguration()
-    .get<string[]>(CONFIGURATION.javaScriptLanguages)
+    .get<string[]>(CONFIGURATION.javascriptLanguages)
     ?.forEach((extension) => {
       disposables.push(registerCompletionProvider(extension, JSX_REGEX));
       disposables.push(registerCompletionProvider(extension, HTML_REGEX));
@@ -131,16 +139,14 @@ function registerEmmetProviders(disposables: Disposable[]) {
     });
   };
 
-  const htmlLanguages = workspace
-    .getConfiguration()
-    .get<string[]>(CONFIGURATION.htmlLanguages);
+  const config = workspace.getConfiguration();
+
+  const htmlLanguages = config.get<string[]>(CONFIGURATION.htmlLanguages);
   if (htmlLanguages) {
     registerProviders(htmlLanguages);
   }
 
-  const javaScriptLanguages = workspace
-    .getConfiguration()
-    .get<string[]>(CONFIGURATION.javaScriptLanguages);
+  const javaScriptLanguages = config.get<string[]>(CONFIGURATION.javascriptLanguages);
   if (javaScriptLanguages) {
     registerProviders(javaScriptLanguages);
   }
@@ -154,19 +160,31 @@ function unregisterProviders(disposables: Disposable[]) {
 let wvStatusItem: StatusBarItem;
 
 function updateStatusBarItem() {
+  const config = workspace.getConfiguration();
   const editor = window.activeTextEditor;
   const currentLang = editor?.document.languageId;
 
   const allowLanguages = [
-    ...(workspace.getConfiguration().get<string[]>(CONFIGURATION.htmlLanguages) ?? []),
-    ...(workspace.getConfiguration().get<string[]>(CONFIGURATION.javaScriptLanguages) ??
-      []),
+    ...(config.get<string[]>(CONFIGURATION.htmlLanguages) ?? []),
+    ...(config.get<string[]>(CONFIGURATION.javascriptLanguages) ?? []),
   ];
 
-  if (currentLang && allowLanguages.includes(currentLang)) {
-    return wvStatusItem.show();
+  if (!(currentLang && allowLanguages.includes(currentLang))) {
+    return wvStatusItem.hide();
   }
-  return wvStatusItem.hide();
+
+  const isIntellisenseEnabled = config.get<boolean>(CONFIGURATION.enableIntellisense);
+
+  if (isIntellisenseEnabled) {
+    wvStatusItem.tooltip = "WeVis IntelliSense is enabled!\nClick to disable";
+    wvStatusItem.color = undefined;
+  } else {
+    wvStatusItem.tooltip =
+      "WeVis IntelliSense is available but disabled!\nClick to enable";
+    wvStatusItem.color = new ThemeColor("statusBarItem.warningBackground");
+  }
+
+  wvStatusItem.show();
 }
 
 const htmlDisposables: Disposable[] = [];
@@ -183,27 +201,36 @@ export function activate({ subscriptions }: ExtensionContext) {
   workspace.onDidChangeConfiguration(
     async (e) => {
       try {
-        if (e.affectsConfiguration(CONFIGURATION.allowEmmet)) {
-          const isEnabled = workspace
-            .getConfiguration()
-            .get<boolean>(CONFIGURATION.allowEmmet);
-          if (isEnabled) {
+        const config = workspace.getConfiguration();
+        const isIntellisenseEnabled = config.get<boolean>(
+          CONFIGURATION.enableIntellisense
+        );
+
+        if (isIntellisenseEnabled) {
+          if (e.affectsConfiguration(CONFIGURATION.allowEmmet)) {
+            const isEnabled = config.get<boolean>(CONFIGURATION.allowEmmet);
             unregisterProviders(emmetDisposables);
-            registerEmmetProviders(emmetDisposables);
-          } else {
-            unregisterProviders(emmetDisposables);
+            if (isEnabled) {
+              registerEmmetProviders(emmetDisposables);
+            }
           }
-        }
 
-        if (e.affectsConfiguration(CONFIGURATION.htmlLanguages)) {
+          if (e.affectsConfiguration(CONFIGURATION.htmlLanguages)) {
+            unregisterProviders(htmlDisposables);
+            registerHTMLProviders(htmlDisposables);
+          }
+
+          if (e.affectsConfiguration(CONFIGURATION.javascriptLanguages)) {
+            unregisterProviders(javaScriptDisposables);
+            registerJavaScriptProviders(javaScriptDisposables);
+          }
+        } else {
+          unregisterProviders(emmetDisposables);
           unregisterProviders(htmlDisposables);
-          registerHTMLProviders(htmlDisposables);
+          unregisterProviders(javaScriptDisposables);
         }
 
-        if (e.affectsConfiguration(CONFIGURATION.javaScriptLanguages)) {
-          unregisterProviders(javaScriptDisposables);
-          registerJavaScriptProviders(javaScriptDisposables);
-        }
+        updateStatusBarItem();
       } catch (err) {
         console.error(
           "Failed to automatically reload the extension after the configuration change:",
@@ -234,10 +261,9 @@ export function activate({ subscriptions }: ExtensionContext) {
    * Init Status
    */
   wvStatusItem = window.createStatusBarItem(StatusBarAlignment.Right, Infinity);
-  wvStatusItem.text = `Wv`;
-  wvStatusItem.tooltip =
-    "WeVis IntelliSense is available in this file!\nClick to open settings...";
-  wvStatusItem.command = "wevis-intellisense.openSetting";
+  wvStatusItem.text = "WV";
+  wvStatusItem.command = "wevis-intellisense.toggleIntelliSense";
+
   subscriptions.push(wvStatusItem);
 
   window.onDidChangeActiveTextEditor(updateStatusBarItem);
