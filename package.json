@@ -9,6 +9,10 @@
     "url": "https://github.com/rootEnginear/wevis-intellisense"
   },
   "license": "MIT",
+  "homepage": "https://github.com/rootEnginear/wevis-intellisense/blob/main/README.md",
+  "bugs": {
+    "url": "https://github.com/rootEnginear/wevis-intellisense/issues"
+  },
   "engines": {
     "vscode": "^1.73.0"
   },
@@ -22,6 +26,10 @@
     "Other"
   ],
   "icon": "icon.png",
+  "galleryBanner": {
+    "color": "#000000",
+    "theme": "dark"
+  },
   "activationEvents": [
     "onStartupFinished"
   ],
