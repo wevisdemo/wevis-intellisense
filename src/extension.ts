@@ -151,7 +151,7 @@ function unregisterProviders(disposables: Disposable[]) {
   disposables.length = 0;
 }
 
-let wvStatus: StatusBarItem;
+let wvStatusItem: StatusBarItem;
 
 function updateStatusBarItem() {
   const editor = window.activeTextEditor;
@@ -164,15 +164,15 @@ function updateStatusBarItem() {
   ];
 
   if (currentLang && allowLanguages.includes(currentLang)) {
-    wvStatus.show();
-  } else {
-    wvStatus.hide();
+    return wvStatusItem.show();
   }
+  return wvStatusItem.hide();
 }
 
 const htmlDisposables: Disposable[] = [];
 const javaScriptDisposables: Disposable[] = [];
 const emmetDisposables: Disposable[] = [];
+const commandDisposables: Disposable[] = [];
 
 export function activate({ subscriptions }: ExtensionContext) {
   /**
@@ -225,18 +225,20 @@ export function activate({ subscriptions }: ExtensionContext) {
    * Init Commands
    */
   COMMANDS.forEach(({ cmd, action }) => {
-    subscriptions.push(commands.registerCommand(cmd, action));
+    commandDisposables.push(commands.registerCommand(cmd, action));
   });
+
+  subscriptions.push(...commandDisposables);
 
   /**
    * Init Status
    */
-  wvStatus = window.createStatusBarItem(StatusBarAlignment.Right, Infinity);
-  wvStatus.text = `Wv`;
-  wvStatus.tooltip =
+  wvStatusItem = window.createStatusBarItem(StatusBarAlignment.Right, Infinity);
+  wvStatusItem.text = `Wv`;
+  wvStatusItem.tooltip =
     "WeVis IntelliSense is available in this file!\nClick to open settings...";
-  wvStatus.command = "wevis-intellisense.openSetting";
-  subscriptions.push(wvStatus);
+  wvStatusItem.command = "wevis-intellisense.openSetting";
+  subscriptions.push(wvStatusItem);
 
   window.onDidChangeActiveTextEditor(updateStatusBarItem);
   window.onDidChangeTextEditorOptions(updateStatusBarItem);
@@ -250,4 +252,6 @@ export function deactivate() {
   unregisterProviders(htmlDisposables);
   unregisterProviders(javaScriptDisposables);
   unregisterProviders(emmetDisposables);
+  unregisterProviders(commandDisposables);
+  wvStatusItem.dispose();
 }
