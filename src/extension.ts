@@ -207,6 +207,15 @@ export function activate({ subscriptions }: ExtensionContext) {
         );
 
         if (isIntellisenseEnabled) {
+          if (e.affectsConfiguration(CONFIGURATION.enableIntellisense)) {
+            const isEnabled = config.get<boolean>(CONFIGURATION.allowEmmet);
+            if (isEnabled) {
+              registerEmmetProviders(emmetDisposables);
+            }
+            registerHTMLProviders(htmlDisposables);
+            registerJavaScriptProviders(javaScriptDisposables);
+          }
+
           if (e.affectsConfiguration(CONFIGURATION.allowEmmet)) {
             const isEnabled = config.get<boolean>(CONFIGURATION.allowEmmet);
             unregisterProviders(emmetDisposables);
