@@ -17,9 +17,10 @@
     "vscode": "^1.73.0"
   },
   "keywords": [
-    "css",
-    "class",
     "autocomplete",
+    "class",
+    "css",
+    "snippets",
     "wevis"
   ],
   "categories": [
@@ -59,7 +60,7 @@
             "type": "boolean",
             "default": true
           },
-          "wevisIntellisense.autosuggestLanguages": {
+          "wevisIntellisense.suggestionLanguages": {
             "description": "A list of languages where suggestions are enabled.",
             "type": "array",
             "default": [

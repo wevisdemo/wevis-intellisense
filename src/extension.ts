@@ -34,7 +34,7 @@ import { CLASSES } from "./classes";
 import { SETTINGS, COMMANDS, COMPLETION_TRIGGER_CHARS, REGEXPS } from "./config";
 
 /**
- * Autosuggestion
+ * Suggestion
  */
 const registerCompletionProvider = (
   languageSelector: string,
@@ -85,7 +85,7 @@ const registerProviders = (
 ) =>
   workspace
     .getConfiguration()
-    .get<string[]>(SETTINGS.autosuggestLanguages)
+    .get<string[]>(SETTINGS.suggestionLanguages)
     ?.forEach((extension) => {
       const [regex, splitChar] =
         who === "emmet" ? [REGEXPS.emmetRegex, "."] : [REGEXPS.classNameRegex, " "];
@@ -107,7 +107,7 @@ const updateStatusBarItem = () => {
   const editor = window.activeTextEditor;
   const currentLang = editor?.document.languageId;
 
-  const allowLanguages = config.get<string[]>(SETTINGS.autosuggestLanguages) ?? [];
+  const allowLanguages = config.get<string[]>(SETTINGS.suggestionLanguages) ?? [];
 
   if (!(currentLang && allowLanguages.includes(currentLang))) {
     return wvStatusItem.hide();
@@ -137,7 +137,7 @@ const otherDisposables: Disposable[] = [];
 
 export const activate = ({ subscriptions }: ExtensionContext) => {
   /**
-   * Init Autosuggestion
+   * Init Suggestion
    */
   otherDisposables.push(
     workspace.onDidChangeConfiguration(
@@ -163,7 +163,7 @@ export const activate = ({ subscriptions }: ExtensionContext) => {
               }
             }
 
-            if (event.affectsConfiguration(SETTINGS.autosuggestLanguages)) {
+            if (event.affectsConfiguration(SETTINGS.suggestionLanguages)) {
               unregisterProviders(classDisposables);
               registerProviders(classDisposables);
             }

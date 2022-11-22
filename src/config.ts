@@ -3,7 +3,7 @@ import { commands, workspace } from "vscode";
 export const SETTINGS = {
   enableIntellisense: "wevisIntellisense.enableIntellisense",
   allowEmmet: "wevisIntellisense.allowEmmet",
-  autosuggestLanguages: "wevisIntellisense.autosuggestLanguages",
+  suggestionLanguages: "wevisIntellisense.suggestionLanguages",
 };
 
 export const COMMANDS = [

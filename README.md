@@ -12,15 +12,17 @@ To install the extension, use the keyword `WeVis` in your extension sidebar. Alt
 
 ## Features
 
-Autosuggest available CSS classes from the design system in several files format such as HTML (.html), Vue (.vue), React (.js, .jsx, .tsx), Svelte (.svelte), Astro (.astro). It works on the pattern `` class[Name]=[{]<"|'|`> ``; if the pattern matched, it will try to suggest you.
+### Suggestion
 
-![Autosuggestion in class attribute](./assets/class.jpg)
+Suggest available CSS classes from the design system in several files format such as HTML (.html), Vue (.vue), React (.js, .jsx, .tsx), Svelte (.svelte), Astro (.astro). It works on the pattern `` class[Name]=[{]<"|'|`> ``; if the pattern matched, it will try to suggest you.
+
+![Suggestion for class attribute](./assets/class.jpg)
 
 This extension also works with Emmet, so you can type `.` and it will start suggesting you. This is enabled by default, but you can disable this functionality in the settings.
 
-![Autosuggestion in Emmet](./assets/emmet.jpg)
+![Suggestion in Emmet](./assets/emmet.jpg)
 
-To provide a clear indication whether the extension is available for a file, A small "WV" will appear at the status bar when available. You can click on it to quickly enable/disable the autosuggest functionality. When disabled, it will be in warning color (typically dark yellow).
+To provide a clear indication whether the extension is available for a file, A small "WV" will appear at the status bar when available. You can click on it to quickly enable/disable the suggestion functionality. When disabled, it will be in warning color (typically dark yellow).
 
 ![Extension availability shown in the status bar](./assets/status.jpg)
 
@@ -28,11 +30,17 @@ The extension shipped with several commands, which you can use them via the comm
 
 ![Open extension settings using the command palette](./assets/command.jpg)
 
-For upcoming features and plan, please see [Planned Features](#planned-features).
+### Snippets
+
+You can insert a snippet for components and component sets through prefix `wv-`.
+
+![Snippets suggestion on typing 'wv-'](./assets/snippets.jpg)
+
+> For upcoming features and plan, please see [Planned Features](#planned-features).
 
 ## Extension Settings
 
-There are 4 settings available in this extension:
+There are 3 settings available in this extension:
 
 - `wevisIntellisense.enableIntellisense`
   - Enable IntelliSense in available file.
@@ -40,16 +48,13 @@ There are 4 settings available in this extension:
 - `wevisIntellisense.allowEmmet`
   - Allow suggestion with Emmet abbreviation.
   - Default: `true`
-- `wevisIntellisense.htmlLanguages`
-  - A list of HTML based languages where suggestions are enabled.
-  - Default: `["html", "vue", "vue-html", "svelte", "astro"]`
-- `wevisIntellisense.javascriptLanguages`
-  - A list of JavaScript based languages where suggestions are enabled.
-  - Default: `["javascript", "javascriptreact", "typescriptreact"]`
+- `wevisIntellisense.suggestionLanguages`
+  - A list of languages where suggestions are enabled.
+  - Default: `["html", "vue", "vue-html", "svelte", "astro", "javascript", "javascriptreact", "typescriptreact"]`
 
 ## Planned Features
 
-- [x] Autosuggestion
+- [x] Suggestion
 - [x] Snippets
   - [x] Component Snippets
   - [x] Cookbook Snippets
