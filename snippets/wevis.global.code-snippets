@@ -1,0 +1,12 @@
+{
+  "Generate <WvContainer>": {
+    "scope": "vue,vue-html,svelte,javascript,javascriptreact,typescriptreact",
+    "prefix": "wv-container",
+    "body": [
+      "<WvContainer ${1:heading=\"${2:เกี่ยวกับโครงการ}\"}>",
+      "\t$0",
+      "</WvContainer>"
+    ],
+    "description": "WeVis: Generate <WvContainer>"
+  }
+}

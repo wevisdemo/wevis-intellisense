@@ -50,9 +50,9 @@ There are 4 settings available in this extension:
 ## Planned Features
 
 - [x] Autosuggestion
-- [ ] Snippets
-  - [ ] Component Snippets
-  - [ ] Cookbook Snippets
+- [x] Snippets
+  - [x] Component Snippets
+  - [x] Cookbook Snippets
 - [ ] Component Generator
 
 ## Changelogs

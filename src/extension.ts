@@ -30,40 +30,8 @@ import {
   workspace,
 } from "vscode";
 
-import { CLASSES } from "./css-classes";
-
-const CONFIGURATION = {
-  enableIntellisense: "wevisIntellisense.enableIntellisense",
-  allowEmmet: "wevisIntellisense.allowEmmet",
-  htmlLanguages: "wevisIntellisense.htmlLanguages",
-  javascriptLanguages: "wevisIntellisense.javascriptLanguages",
-};
-
-const COMMANDS = [
-  {
-    cmd: "wevis-intellisense.openSettings",
-    action: () => {
-      commands.executeCommand(
-        "workbench.action.openSettings",
-        "@ext:rootenginear.wevis-intellisense"
-      );
-    },
-  },
-  {
-    cmd: "wevis-intellisense.toggleIntelliSense",
-    action: () => {
-      const config = workspace.getConfiguration();
-      const isIntellisenseEnabled = config.get<boolean>(CONFIGURATION.enableIntellisense);
-      config.update(CONFIGURATION.enableIntellisense, !isIntellisenseEnabled, true);
-    },
-  },
-];
-
-const COMPLETION_TRIGGER_CHARS = "\"'` .".split("");
-
-const HTML_REGEX = /class={?["'`]([\w- ]*$)/;
-const JSX_REGEX = /className={?["'`]([\w- ]*$)/;
-const EMMET_REGEX = /\.([\w-. ]*$)/;
+import { CLASSES } from "./classes";
+import { SETTINGS, COMMANDS, COMPLETION_TRIGGER_CHARS, REGEXPS } from "./config";
 
 const registerCompletionProvider = (
   languageSelector: string,
@@ -118,35 +86,35 @@ const registerCompletionProvider = (
 const registerHTMLProviders = (disposables: Disposable[]) =>
   workspace
     .getConfiguration()
-    .get<string[]>(CONFIGURATION.htmlLanguages)
+    .get<string[]>(SETTINGS.htmlLanguages)
     ?.forEach((extension) => {
-      disposables.push(registerCompletionProvider(extension, HTML_REGEX));
+      disposables.push(registerCompletionProvider(extension, REGEXPS.htmlRegex));
     });
 
 const registerJavaScriptProviders = (disposables: Disposable[]) =>
   workspace
     .getConfiguration()
-    .get<string[]>(CONFIGURATION.javascriptLanguages)
+    .get<string[]>(SETTINGS.javascriptLanguages)
     ?.forEach((extension) => {
-      disposables.push(registerCompletionProvider(extension, JSX_REGEX));
-      disposables.push(registerCompletionProvider(extension, HTML_REGEX));
+      disposables.push(registerCompletionProvider(extension, REGEXPS.jsxRegex));
+      disposables.push(registerCompletionProvider(extension, REGEXPS.htmlRegex));
     });
 
 function registerEmmetProviders(disposables: Disposable[]) {
   const registerProviders = (modes: string[]) => {
     modes.forEach((language) => {
-      disposables.push(registerCompletionProvider(language, EMMET_REGEX, "."));
+      disposables.push(registerCompletionProvider(language, REGEXPS.emmetRegex, "."));
     });
   };
 
   const config = workspace.getConfiguration();
 
-  const htmlLanguages = config.get<string[]>(CONFIGURATION.htmlLanguages);
+  const htmlLanguages = config.get<string[]>(SETTINGS.htmlLanguages);
   if (htmlLanguages) {
     registerProviders(htmlLanguages);
   }
 
-  const javaScriptLanguages = config.get<string[]>(CONFIGURATION.javascriptLanguages);
+  const javaScriptLanguages = config.get<string[]>(SETTINGS.javascriptLanguages);
   if (javaScriptLanguages) {
     registerProviders(javaScriptLanguages);
   }
@@ -165,15 +133,15 @@ function updateStatusBarItem() {
   const currentLang = editor?.document.languageId;
 
   const allowLanguages = [
-    ...(config.get<string[]>(CONFIGURATION.htmlLanguages) ?? []),
-    ...(config.get<string[]>(CONFIGURATION.javascriptLanguages) ?? []),
+    ...(config.get<string[]>(SETTINGS.htmlLanguages) ?? []),
+    ...(config.get<string[]>(SETTINGS.javascriptLanguages) ?? []),
   ];
 
   if (!(currentLang && allowLanguages.includes(currentLang))) {
     return wvStatusItem.hide();
   }
 
-  const isIntellisenseEnabled = config.get<boolean>(CONFIGURATION.enableIntellisense);
+  const isIntellisenseEnabled = config.get<boolean>(SETTINGS.enableIntellisense);
 
   if (isIntellisenseEnabled) {
     wvStatusItem.tooltip = "WeVis IntelliSense is enabled!\nClick to disable";
@@ -202,13 +170,11 @@ export function activate({ subscriptions }: ExtensionContext) {
     async (e) => {
       try {
         const config = workspace.getConfiguration();
-        const isIntellisenseEnabled = config.get<boolean>(
-          CONFIGURATION.enableIntellisense
-        );
+        const isIntellisenseEnabled = config.get<boolean>(SETTINGS.enableIntellisense);
 
         if (isIntellisenseEnabled) {
-          if (e.affectsConfiguration(CONFIGURATION.enableIntellisense)) {
-            const isEnabled = config.get<boolean>(CONFIGURATION.allowEmmet);
+          if (e.affectsConfiguration(SETTINGS.enableIntellisense)) {
+            const isEnabled = config.get<boolean>(SETTINGS.allowEmmet);
             if (isEnabled) {
               registerEmmetProviders(emmetDisposables);
             }
@@ -216,20 +182,20 @@ export function activate({ subscriptions }: ExtensionContext) {
             registerJavaScriptProviders(javaScriptDisposables);
           }
 
-          if (e.affectsConfiguration(CONFIGURATION.allowEmmet)) {
-            const isEnabled = config.get<boolean>(CONFIGURATION.allowEmmet);
+          if (e.affectsConfiguration(SETTINGS.allowEmmet)) {
+            const isEnabled = config.get<boolean>(SETTINGS.allowEmmet);
             unregisterProviders(emmetDisposables);
             if (isEnabled) {
               registerEmmetProviders(emmetDisposables);
             }
           }
 
-          if (e.affectsConfiguration(CONFIGURATION.htmlLanguages)) {
+          if (e.affectsConfiguration(SETTINGS.htmlLanguages)) {
             unregisterProviders(htmlDisposables);
             registerHTMLProviders(htmlDisposables);
           }
 
-          if (e.affectsConfiguration(CONFIGURATION.javascriptLanguages)) {
+          if (e.affectsConfiguration(SETTINGS.javascriptLanguages)) {
             unregisterProviders(javaScriptDisposables);
             registerJavaScriptProviders(javaScriptDisposables);
           }

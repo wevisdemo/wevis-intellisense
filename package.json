@@ -23,6 +23,7 @@
     "wevis"
   ],
   "categories": [
+    "Snippets",
     "Other"
   ],
   "icon": "icon.png",
@@ -79,6 +80,17 @@
             ]
           }
         }
+      }
+    ],
+    "snippets": [
+      {
+        "path": "./snippets/wevis.global.code-snippets"
+      },
+      {
+        "path": "./snippets/wevis.reactsvelte.code-snippets"
+      },
+      {
+        "path": "./snippets/wevis.vue.code-snippets"
       }
     ]
   },
