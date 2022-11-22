@@ -3,8 +3,7 @@ import { commands, workspace } from "vscode";
 export const SETTINGS = {
   enableIntellisense: "wevisIntellisense.enableIntellisense",
   allowEmmet: "wevisIntellisense.allowEmmet",
-  htmlLanguages: "wevisIntellisense.htmlLanguages",
-  javascriptLanguages: "wevisIntellisense.javascriptLanguages",
+  autosuggestLanguages: "wevisIntellisense.autosuggestLanguages",
 };
 
 export const COMMANDS = [
@@ -32,7 +31,6 @@ export const COMPLETION_TRIGGER_CHARS = [..."\"'` ."];
 // Testcase:
 // li class="group/item [@supports(display:grid)]:grid -inset-1 [&_p]:mt-4 after:content-['*']
 export const REGEXPS = {
-  htmlRegex: /class(?:Name)?={?(?:"([^"]*$)|'([^']*$)|`(.*$))/,
-  jsxRegex: /class(?:Name)?={?(?:"([^"]*$)|'([^']*$)|`(.*$))/,
+  classNameRegex: /class(?:Name)?={?(?:"([^"]*$)|'([^']*$)|`(.*$))/,
   emmetRegex: /\.(.*$)/,
 };

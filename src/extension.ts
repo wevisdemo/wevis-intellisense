@@ -33,6 +33,9 @@ import {
 import { CLASSES } from "./classes";
 import { SETTINGS, COMMANDS, COMPLETION_TRIGGER_CHARS, REGEXPS } from "./config";
 
+/**
+ * Autosuggestion
+ */
 const registerCompletionProvider = (
   languageSelector: string,
   classMatchRegex: RegExp,
@@ -41,25 +44,27 @@ const registerCompletionProvider = (
   languages.registerCompletionItemProvider(
     languageSelector,
     {
-      provideCompletionItems(
-        document: TextDocument,
-        position: Position
-      ): CompletionItem[] {
+      provideCompletionItems(document: TextDocument, position: Position) {
         const start = new Position(position.line, 0);
         const range = new Range(start, position);
         const text = document.getText(range);
 
-        // Check if the cursor is on a class attribute and retrieve all the css rules in this class attribute
+        // Check if there is a match, if not just return []
         const rawClasses = text.match(classMatchRegex);
-        if (!rawClasses || rawClasses.length === 1) {
+        const matchedString = rawClasses?.[1] ?? rawClasses?.[2] ?? rawClasses?.[3];
+        if (!rawClasses || typeof matchedString !== "string") {
           return [];
         }
 
-        // Will store the classes found on the class attribute
-        const classesOnAttribute = rawClasses[1].split(splitChar);
-
-        // Creates a collection of CompletionItem based on the classes already cached
-        const completionItems = CLASSES.map((className) => {
+        // 1. Separate all already-there classes
+        const classesInAttribute = matchedString.split(splitChar).map((c) => c.trim());
+        // 2. Remove them from the list
+        //    so we don't get duplicate suggest when it's already there
+        const availableClasses = CLASSES.filter(
+          (className) => !classesInAttribute.includes(className)
+        );
+        // 3. Create a list of CompletionItem
+        const completionItems = availableClasses.map((className) => {
           const completionItem = new CompletionItem(className, CompletionItemKind.Value);
 
           completionItem.filterText = className;
@@ -68,74 +73,41 @@ const registerCompletionProvider = (
           return completionItem;
         });
 
-        // Removes from the collection the classes already specified on the class attribute
-        for (const classOnAttribute of classesOnAttribute) {
-          for (let j = 0; j < completionItems.length; j++) {
-            if (completionItems[j].insertText === classOnAttribute) {
-              completionItems.splice(j, 1);
-            }
-          }
-        }
-
         return completionItems;
       },
     },
     ...COMPLETION_TRIGGER_CHARS
   );
 
-const registerHTMLProviders = (disposables: Disposable[]) =>
+const registerProviders = (
+  disposables: Disposable[],
+  who: "emmet" | "className" = "className"
+) =>
   workspace
     .getConfiguration()
-    .get<string[]>(SETTINGS.htmlLanguages)
+    .get<string[]>(SETTINGS.autosuggestLanguages)
     ?.forEach((extension) => {
-      disposables.push(registerCompletionProvider(extension, REGEXPS.htmlRegex));
+      const [regex, splitChar] =
+        who === "emmet" ? [REGEXPS.emmetRegex, "."] : [REGEXPS.classNameRegex, " "];
+      disposables.push(registerCompletionProvider(extension, regex, splitChar));
     });
 
-const registerJavaScriptProviders = (disposables: Disposable[]) =>
-  workspace
-    .getConfiguration()
-    .get<string[]>(SETTINGS.javascriptLanguages)
-    ?.forEach((extension) => {
-      disposables.push(registerCompletionProvider(extension, REGEXPS.jsxRegex));
-      disposables.push(registerCompletionProvider(extension, REGEXPS.htmlRegex));
-    });
-
-function registerEmmetProviders(disposables: Disposable[]) {
-  const registerProviders = (modes: string[]) => {
-    modes.forEach((language) => {
-      disposables.push(registerCompletionProvider(language, REGEXPS.emmetRegex, "."));
-    });
-  };
-
-  const config = workspace.getConfiguration();
-
-  const htmlLanguages = config.get<string[]>(SETTINGS.htmlLanguages);
-  if (htmlLanguages) {
-    registerProviders(htmlLanguages);
-  }
-
-  const javaScriptLanguages = config.get<string[]>(SETTINGS.javascriptLanguages);
-  if (javaScriptLanguages) {
-    registerProviders(javaScriptLanguages);
-  }
-}
-
-function unregisterProviders(disposables: Disposable[]) {
+const unregisterProviders = (disposables: Disposable[]) => {
   disposables.forEach((disposable) => disposable.dispose());
   disposables.length = 0;
-}
+};
 
+/**
+ * Status Item
+ */
 let wvStatusItem: StatusBarItem;
 
-function updateStatusBarItem() {
+const updateStatusBarItem = () => {
   const config = workspace.getConfiguration();
   const editor = window.activeTextEditor;
   const currentLang = editor?.document.languageId;
 
-  const allowLanguages = [
-    ...(config.get<string[]>(SETTINGS.htmlLanguages) ?? []),
-    ...(config.get<string[]>(SETTINGS.javascriptLanguages) ?? []),
-  ];
+  const allowLanguages = config.get<string[]>(SETTINGS.autosuggestLanguages) ?? [];
 
   if (!(currentLang && allowLanguages.includes(currentLang))) {
     return wvStatusItem.hide();
@@ -153,75 +125,71 @@ function updateStatusBarItem() {
   }
 
   wvStatusItem.show();
-}
+};
 
-const htmlDisposables: Disposable[] = [];
-const javaScriptDisposables: Disposable[] = [];
+/**
+ * System
+ */
+const classDisposables: Disposable[] = [];
 const emmetDisposables: Disposable[] = [];
 const commandDisposables: Disposable[] = [];
+const otherDisposables: Disposable[] = [];
 
-export function activate({ subscriptions }: ExtensionContext) {
+export const activate = ({ subscriptions }: ExtensionContext) => {
   /**
-   * Init Autocomplete
+   * Init Autosuggestion
    */
-  const disposables: Disposable[] = [];
+  otherDisposables.push(
+    workspace.onDidChangeConfiguration(
+      (event) => {
+        try {
+          const config = workspace.getConfiguration();
+          const isIntellisenseEnabled = config.get<boolean>(SETTINGS.enableIntellisense);
 
-  workspace.onDidChangeConfiguration(
-    async (e) => {
-      try {
-        const config = workspace.getConfiguration();
-        const isIntellisenseEnabled = config.get<boolean>(SETTINGS.enableIntellisense);
-
-        if (isIntellisenseEnabled) {
-          if (e.affectsConfiguration(SETTINGS.enableIntellisense)) {
-            const isEnabled = config.get<boolean>(SETTINGS.allowEmmet);
-            if (isEnabled) {
-              registerEmmetProviders(emmetDisposables);
+          if (isIntellisenseEnabled) {
+            if (event.affectsConfiguration(SETTINGS.enableIntellisense)) {
+              const isEnabled = config.get<boolean>(SETTINGS.allowEmmet);
+              if (isEnabled) {
+                registerProviders(emmetDisposables, "emmet");
+              }
+              registerProviders(classDisposables);
             }
-            registerHTMLProviders(htmlDisposables);
-            registerJavaScriptProviders(javaScriptDisposables);
-          }
 
-          if (e.affectsConfiguration(SETTINGS.allowEmmet)) {
-            const isEnabled = config.get<boolean>(SETTINGS.allowEmmet);
+            if (event.affectsConfiguration(SETTINGS.allowEmmet)) {
+              const isEnabled = config.get<boolean>(SETTINGS.allowEmmet);
+              unregisterProviders(emmetDisposables);
+              if (isEnabled) {
+                registerProviders(emmetDisposables, "emmet");
+              }
+            }
+
+            if (event.affectsConfiguration(SETTINGS.autosuggestLanguages)) {
+              unregisterProviders(classDisposables);
+              registerProviders(classDisposables);
+            }
+          } else {
             unregisterProviders(emmetDisposables);
-            if (isEnabled) {
-              registerEmmetProviders(emmetDisposables);
-            }
+            unregisterProviders(classDisposables);
           }
 
-          if (e.affectsConfiguration(SETTINGS.htmlLanguages)) {
-            unregisterProviders(htmlDisposables);
-            registerHTMLProviders(htmlDisposables);
-          }
-
-          if (e.affectsConfiguration(SETTINGS.javascriptLanguages)) {
-            unregisterProviders(javaScriptDisposables);
-            registerJavaScriptProviders(javaScriptDisposables);
-          }
-        } else {
-          unregisterProviders(emmetDisposables);
-          unregisterProviders(htmlDisposables);
-          unregisterProviders(javaScriptDisposables);
+          updateStatusBarItem();
+        } catch (err) {
+          console.error(
+            "Failed to automatically reload the extension after the configuration change:",
+            err
+          );
         }
-
-        updateStatusBarItem();
-      } catch (err) {
-        console.error(
-          "Failed to automatically reload the extension after the configuration change:",
-          err
-        );
-      }
-    },
-    null,
-    disposables
+      },
+      null,
+      otherDisposables
+    )
   );
 
-  subscriptions.push(...disposables);
-
-  registerEmmetProviders(emmetDisposables);
-  registerHTMLProviders(htmlDisposables);
-  registerJavaScriptProviders(javaScriptDisposables);
+  const isEmmetEnabled = workspace.getConfiguration().get<boolean>(SETTINGS.allowEmmet);
+  if (isEmmetEnabled) {
+    registerProviders(emmetDisposables, "emmet");
+  }
+  registerProviders(classDisposables);
 
   /**
    * Init Commands
@@ -233,7 +201,7 @@ export function activate({ subscriptions }: ExtensionContext) {
   subscriptions.push(...commandDisposables);
 
   /**
-   * Init Status
+   * Init Status Item
    */
   wvStatusItem = window.createStatusBarItem(StatusBarAlignment.Right, Infinity);
   wvStatusItem.text = "WV";
@@ -241,18 +209,28 @@ export function activate({ subscriptions }: ExtensionContext) {
 
   subscriptions.push(wvStatusItem);
 
-  window.onDidChangeActiveTextEditor(updateStatusBarItem);
-  window.onDidChangeTextEditorOptions(updateStatusBarItem);
-  window.onDidChangeVisibleTextEditors(updateStatusBarItem);
-  window.onDidChangeWindowState(updateStatusBarItem);
+  otherDisposables.push(
+    window.onDidChangeActiveTextEditor(updateStatusBarItem, null, otherDisposables)
+  );
+  otherDisposables.push(
+    window.onDidChangeTextEditorOptions(updateStatusBarItem, null, otherDisposables)
+  );
+  otherDisposables.push(
+    window.onDidChangeVisibleTextEditors(updateStatusBarItem, null, otherDisposables)
+  );
+  otherDisposables.push(
+    window.onDidChangeWindowState(updateStatusBarItem, null, otherDisposables)
+  );
 
   updateStatusBarItem();
-}
 
-export function deactivate() {
-  unregisterProviders(htmlDisposables);
-  unregisterProviders(javaScriptDisposables);
+  subscriptions.push(...otherDisposables);
+};
+
+export const deactivate = () => {
+  unregisterProviders(classDisposables);
   unregisterProviders(emmetDisposables);
   unregisterProviders(commandDisposables);
+  unregisterProviders(otherDisposables);
   wvStatusItem.dispose();
-}
+};

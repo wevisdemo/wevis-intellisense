@@ -59,21 +59,15 @@
             "type": "boolean",
             "default": true
           },
-          "wevisIntellisense.htmlLanguages": {
-            "description": "A list of HTML based languages where suggestions are enabled.",
+          "wevisIntellisense.autosuggestLanguages": {
+            "description": "A list of languages where suggestions are enabled.",
             "type": "array",
             "default": [
               "html",
               "vue",
               "vue-html",
               "svelte",
-              "astro"
-            ]
-          },
-          "wevisIntellisense.javascriptLanguages": {
-            "description": "A list of JavaScript based languages where suggestions are enabled.",
-            "type": "array",
-            "default": [
+              "astro",
               "javascript",
               "javascriptreact",
               "typescriptreact"
