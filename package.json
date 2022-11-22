@@ -2,7 +2,7 @@
   "name": "wevis-intellisense",
   "displayName": "WeVis IntelliSense",
   "description": "VSCode IntelliSense for WeVis Design System",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "publisher": "rootenginear",
   "repository": {
     "type": "git",
