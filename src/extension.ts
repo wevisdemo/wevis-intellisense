@@ -147,18 +147,19 @@ export const activate = ({ subscriptions }: ExtensionContext) => {
           const isIntellisenseEnabled = config.get<boolean>(SETTINGS.enableIntellisense);
 
           if (isIntellisenseEnabled) {
+            // Intellisense has just enabled
             if (event.affectsConfiguration(SETTINGS.enableIntellisense)) {
-              const isEnabled = config.get<boolean>(SETTINGS.allowEmmet);
-              if (isEnabled) {
+              const isEmmetEnabled = config.get<boolean>(SETTINGS.allowEmmet);
+              if (isEmmetEnabled) {
                 registerProviders(emmetDisposables, "emmet");
               }
               registerProviders(classDisposables);
             }
 
             if (event.affectsConfiguration(SETTINGS.allowEmmet)) {
-              const isEnabled = config.get<boolean>(SETTINGS.allowEmmet);
               unregisterProviders(emmetDisposables);
-              if (isEnabled) {
+              const isEmmetEnabled = config.get<boolean>(SETTINGS.allowEmmet);
+              if (isEmmetEnabled) {
                 registerProviders(emmetDisposables, "emmet");
               }
             }
@@ -185,11 +186,16 @@ export const activate = ({ subscriptions }: ExtensionContext) => {
     )
   );
 
-  const isEmmetEnabled = workspace.getConfiguration().get<boolean>(SETTINGS.allowEmmet);
-  if (isEmmetEnabled) {
-    registerProviders(emmetDisposables, "emmet");
+  const config = workspace.getConfiguration();
+
+  const isIntellisenseEnabled = config.get<boolean>(SETTINGS.enableIntellisense);
+  if (isIntellisenseEnabled) {
+    const isEmmetEnabled = config.get<boolean>(SETTINGS.allowEmmet);
+    if (isEmmetEnabled) {
+      registerProviders(emmetDisposables, "emmet");
+    }
+    registerProviders(classDisposables);
   }
-  registerProviders(classDisposables);
 
   /**
    * Init Commands
